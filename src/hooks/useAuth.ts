@@ -45,10 +45,11 @@ export function useProfile(userId?: string) {
     queryKey: ["profile", userId],
     enabled: !!userId,
     queryFn: async (): Promise<Profile | null> => {
+      if (!userId) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", userId!)
+        .eq("id", userId)
         .maybeSingle();
       if (error) throw error;
       return data as Profile | null;
@@ -61,10 +62,11 @@ export function useRole(userId?: string) {
     queryKey: ["role", userId],
     enabled: !!userId,
     queryFn: async (): Promise<AppRole> => {
+      if (!userId) throw new Error("Not signed in");
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId!);
+        .eq("user_id", userId);
       if (error) throw error;
       const roles = (data ?? []).map((r) => r.role as AppRole);
       if (roles.includes("admin")) return "admin";
