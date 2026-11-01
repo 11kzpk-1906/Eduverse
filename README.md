@@ -1,68 +1,56 @@
-📚 EduVerse
+# EduVerse
 
-The Future of Smart Learning 🚀
-An AI-powered education platform that connects students and teachers in one modern, secure, and intelligent workspace.
+An education-focused web application prototype for bringing learning resources and student workflows into one workspace.
 
-🌟 Overview
+## Current stack
 
-EduVerse is a next-generation educational platform designed to simplify communication, assignment management, and AI-assisted learning.
+- React and TypeScript
+- Vite and TanStack tooling
+- Tailwind CSS and component libraries
+- Supabase integration
+- npm or Bun for dependency management
 
-Instead of juggling multiple apps like WhatsApp, Google Classroom, email, and cloud storage, EduVerse combines everything into one beautiful platform.
+The repository is currently a web application. Features described in the interface or roadmap may still be in development; check the source code and roadmap before treating them as production-ready.
 
-Whether you're a student looking for organized learning or a teacher managing multiple classes, EduVerse makes education faster, smarter, and more engaging.
+## Getting started
 
-✨ Features
-👨‍🎓 Student Features
-Join classes using Class Codes
-View notes and study materials
-Receive announcements instantly
-Submit assignments (PDF, DOCX, Images)
-Assignment deadline reminders
-AI Tutor for instant doubt solving
-Personalized Dashboard
-Notification Center
-Progress Tracking
-Secure Login
-👩‍🏫 Teacher Features
-Create unlimited classes
-Generate unique Class Codes
-Upload notes and resources
-Create assignments
-Review student submissions
-Grade assignments
-Post announcements
-Manage students
-Dashboard Analytics
-🤖 AI Features
-AI Tutor
-Homework Assistance
-Instant Concept Explanation
-Question Generator
-Study Recommendations
-Smart Search
-AI Chat
-📱 Cross Platform
+### Requirements
 
-EduVerse works on
+- Node.js (use a current LTS release)
+- npm or Bun
 
-🌐 Web
-💻 Windows
-📱 Android
-🍎 iOS (Coming Soon)
-🎨 UI Design
-Modern Material Design 3
-Beautiful animations
-Responsive layout
-Light & Dark Mode
-Glassmorphism effects
-Rounded Cards
-Clean Dashboard
-Smooth transitions
-<div align="center">
-⭐ If you like EduVerse, consider giving this repository a star!
+### Install dependencies
 
-Built with ❤️ using Flutter & Firebase
+```bash
+npm install
+```
 
-Empowering Education Through AI.
+### Configure environment variables
 
-</div>
+Create a local `.env` file from your own project settings. Use the variable names referenced by the application, such as the Supabase project URL and publishable key. Never put service-role keys, private API keys, or other server secrets in variables prefixed with `VITE_`; Vite exposes those values to browser code.
+
+Do not commit local environment files. The repository's `.gitignore` excludes them.
+
+### Run locally
+
+```bash
+npm run dev
+```
+
+### Build and lint
+
+```bash
+npm run build
+npm run lint
+```
+
+## Project layout
+
+- `src/` — application source
+- `public/` — static assets
+- `supabase/` — Supabase-related project files
+- `vite.config.ts` — Vite configuration
+
+## Contributing
+
+Keep changes focused, run the build and lint checks, and document any required environment variables without publishing their values.
