@@ -1,3 +1,8 @@
+# Environment files (keep local configuration out of Git)
+.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log
