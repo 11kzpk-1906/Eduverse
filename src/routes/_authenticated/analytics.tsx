@@ -1,3 +1,6 @@
+import { learningProgress } from "@/lib/learning-loop";
+import { useSession, useRole } from "@/hooks/useAuth";
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -9,7 +12,7 @@ import { useAssignments, useClasses } from "@/lib/data";
 import { useLeaderboard } from "@/lib/games";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
-  head: () => ({ meta: [{ title: "Analytics — EduVerse" }] }),
+  head: () => pageMeta('Analytics', 'Analytics for your EduVerse classes and learning journey.'),
   component: AnalyticsPage,
 });
 
@@ -18,19 +21,17 @@ function AnalyticsPage() {
   const { data: classes = [] } = useClasses();
   const { data: board = [] } = useLeaderboard();
 
-  const totalStudents = classes.reduce((s, c) => s + (c.student_count ?? 0), 0);
-  const allSubs = assignments.flatMap((a) => a.submissions);
-  const graded = allSubs.filter((s) => s.grade !== null);
-  const avg = graded.length ? Math.round(graded.reduce((s, g) => s + (g.grade ?? 0), 0) / graded.length) : 0;
-  const completion = assignments.length && totalStudents
-    ? Math.round((allSubs.length / (assignments.length * Math.max(1, totalStudents))) * 100)
-    : 0;
-
-  const classPerf = classes.map((c) => {
-    const cs = assignments.filter((a) => a.class_id === c.id).flatMap((a) => a.submissions);
-    const g = cs.filter((s) => s.grade !== null);
-    return { c: c.name.slice(0, 12), score: g.length ? Math.round(g.reduce((s, x) => s + (x.grade ?? 0), 0) / g.length) : 0 };
-  });
+  const { user } = useSession();
+  const { data: role } = useRole(user?.id);
+  const teacher = role === "teacher" || role === "admin";
+  const progress = learningProgress(assignments, teacher ? undefined : user?.id);
+  const totalStudents = classes.reduce((s,c)=>s+c.student_count,0);
+  const allSubs = assignments.flatMap(a => a.submissions.filter(s=>teacher || s.student_id === user?.id).map(s=>({...s, points:a.points})));
+  const graded = allSubs.filter(s=>s.grade != null);
+  const avg = progress.average;
+  const expected = teacher ? classes.reduce((n,c)=>n+assignments.filter(a=>a.class_id === c.id).length*c.student_count,0) : assignments.length;
+  const completion = expected ? Math.round(allSubs.length / expected * 100) : 0;
+  const classPerf = classes.map(c=>({c:c.name, score:learningProgress(assignments.filter(a=>a.class_id === c.id),teacher ? undefined : user?.id).average ?? 0}));
 
   // Real trend: bucket graded submissions by month
   const buckets = new Map<string, { sum: number; n: number }>();
@@ -38,7 +39,7 @@ function AnalyticsPage() {
     const d = new Date(g.graded_at ?? g.submitted_at);
     const key = d.toLocaleString("en", { month: "short" });
     const b = buckets.get(key) ?? { sum: 0, n: 0 };
-    b.sum += g.grade ?? 0; b.n += 1;
+    b.sum += g.points ? (g.grade ?? 0) / g.points * 100 : 0; b.n += 1;
     buckets.set(key, b);
   });
   const trend = Array.from(buckets.entries()).slice(-6).map(([m, b]) => ({ m, avg: Math.round(b.sum / b.n) }));
@@ -48,7 +49,7 @@ function AnalyticsPage() {
       <PageHeader title="Analytics" subtitle="Real-time class performance." />
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total students" value={totalStudents} icon={Users} tone="primary" />
-        <StatCard label="Avg. marks" value={`${avg}${graded.length ? "%" : ""}`} icon={Star} tone="success" />
+        <StatCard label="Avg. marks" value={avg == null ? "—" : `${avg}%`} icon={Star} tone="success" />
         <StatCard label="Submissions" value={allSubs.length} icon={ClipboardCheck} tone="secondary" />
         <StatCard label="Top XP" value={board[0]?.xp ?? 0} icon={Trophy} tone="warning" />
       </div>
@@ -63,15 +64,15 @@ function AnalyticsPage() {
                 <AreaChart data={trend} margin={{ left: -20, right: 8, top: 8 }}>
                   <defs>
                     <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#4a90e2" stopOpacity={0.5} />
-                      <stop offset="100%" stopColor="#4a90e2" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.5} />
+                      <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="m" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }} />
-                  <Area type="monotone" dataKey="avg" stroke="#4a90e2" strokeWidth={2.5} fill="url(#g1)" />
+                  <Area type="monotone" dataKey="avg" stroke="var(--primary)" strokeWidth={2.5} fill="url(#g1)" />
                 </AreaChart>
               </ResponsiveContainer>
             )}

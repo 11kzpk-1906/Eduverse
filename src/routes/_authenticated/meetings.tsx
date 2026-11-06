@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -14,7 +15,7 @@ import { useMeetings, useStartMeeting, useEndMeeting, type MeetingRow } from "@/
 import { useRole, useSession } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/_authenticated/meetings")({
-  head: () => ({ meta: [{ title: "Live Classes — EduVerse" }] }),
+  head: () => pageMeta('Live Classes', 'Live Classes for your EduVerse classes and learning journey.'),
   component: MeetingsPage,
 });
 

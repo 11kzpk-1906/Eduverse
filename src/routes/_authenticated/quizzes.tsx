@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -15,7 +16,7 @@ import { useQuizzes, useCreateQuiz, useDeleteQuiz, useSubmitQuizAttempt, type Qu
 import { generateQuiz } from "@/lib/quiz.functions";
 
 export const Route = createFileRoute("/_authenticated/quizzes")({
-  head: () => ({ meta: [{ title: "Quizzes — EduVerse" }] }),
+  head: () => pageMeta('Quizzes', 'Quizzes for your EduVerse classes and learning journey.'),
   component: QuizzesPage,
 });
 

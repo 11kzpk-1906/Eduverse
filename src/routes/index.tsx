@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import heroImg from "@/assets/hero-eduverse.jpg";
 
 export const Route = createFileRoute("/")({
+  head: () => pageMeta('Smart Classrooms', 'EduVerse connects teachers and students through classes, assignments, feedback and AI learning help.'),
   component: Landing,
 });
 

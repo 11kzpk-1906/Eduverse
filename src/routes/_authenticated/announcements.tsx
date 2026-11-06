@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Megaphone, Plus, Loader2, Globe } from "lucide-react";
@@ -19,7 +20,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/announcements")({
-  head: () => ({ meta: [{ title: "Announcements — EduVerse" }] }),
+  head: () => pageMeta('Announcements', 'Announcements for your EduVerse classes and learning journey.'),
   component: AnnouncementsPage,
 });
 

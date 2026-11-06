@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -13,7 +14,7 @@ import { useDecks, useCreateDeck, useDeleteDeck, type DeckRow } from "@/lib/game
 import { generateFlashcards } from "@/lib/quiz.functions";
 
 export const Route = createFileRoute("/_authenticated/flashcards")({
-  head: () => ({ meta: [{ title: "Flashcards — EduVerse" }] }),
+  head: () => pageMeta('Flashcards', 'Flashcards for your EduVerse classes and learning journey.'),
   component: DecksPage,
 });
 

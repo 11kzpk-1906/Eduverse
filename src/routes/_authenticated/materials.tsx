@@ -1,3 +1,5 @@
+import { QueryRecovery } from "@/components/query-recovery";
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { FolderOpen, Plus, Loader2, Link as LinkIcon, File as FileIcon, Trash2, Download } from "lucide-react";
@@ -20,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/materials")({
-  head: () => ({ meta: [{ title: "Materials — EduVerse" }] }),
+  head: () => pageMeta('Materials', 'Access teacher-shared files, PDFs and class resources.'),
   component: MaterialsPage,
 });
 
@@ -32,15 +34,17 @@ function MaterialsPage() {
   const activeId = classId || classes?.[0]?.id;
   const activeClass = classes?.find((c) => c.id === activeId);
   const isTeacher = activeClass?.teacher_id === user?.id;
-  const { data: materials, isLoading } = useMaterials(activeId);
+  const { data: materials, isLoading, isError, refetch } = useMaterials(activeId);
   const del = useDeleteMaterial();
 
   async function openMaterial(m: MaterialRow) {
-    const url = await getMaterialUrl(m);
+    let url: string | null = null;
+    try { url = await getMaterialUrl(m); } catch { return toast.error("Couldn’t open this material. Try again."); }
     if (!url) return toast.error("Couldn't open file");
     window.open(url, "_blank", "noopener,noreferrer");
   }
 
+  if (isError) return <QueryRecovery retry={() => { void refetch(); }} />;
   return (
     <div>
       <PageHeader
@@ -95,7 +99,7 @@ function MaterialsPage() {
                     {m.kind === "file" ? <Download className="h-4 w-4" /> : <LinkIcon className="h-4 w-4" />}
                   </Button>
                   {isTeacher && (
-                    <Button size="icon" variant="ghost" onClick={() => del.mutate(m)} aria-label="Delete">
+                    <Button size="icon" variant="ghost" onClick={() => del.mutate(m, { onError: () => toast.error("Couldn’t delete this material") })} aria-label="Delete">
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   )}

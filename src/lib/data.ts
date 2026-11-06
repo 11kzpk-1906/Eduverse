@@ -181,7 +181,11 @@ export function useCreateAssignment() {
       if (error) throw error;
       return data as AssignmentRow;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["assignments"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["assignments"] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    },
   });
 }
 
@@ -207,7 +211,11 @@ export function useSubmitAssignment() {
       if (error) throw error;
       return data as SubmissionRow;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["assignments"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["assignments"] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    },
   });
 }
 
@@ -228,7 +236,11 @@ export function useGradeSubmission() {
       if (error) throw error;
       return data as SubmissionRow;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["assignments"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["assignments"] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    },
   });
 }
 

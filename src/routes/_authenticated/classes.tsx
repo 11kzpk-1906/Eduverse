@@ -1,3 +1,5 @@
+import { pageMeta } from "@/lib/page-meta";
+import { QueryRecovery } from "@/components/query-recovery";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { BookOpen, Plus, KeyRound, Users, KeySquare, Copy, Loader2 } from "lucide-react";
@@ -22,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/classes")({
-  head: () => ({ meta: [{ title: "Classes — EduVerse" }] }),
+  head: () => pageMeta('Classes', 'Classes for your EduVerse classes and learning journey.'),
   component: ClassesPage,
 });
 
@@ -38,7 +40,7 @@ function ClassesPage() {
   const { user } = useSession();
   const { data: role } = useRole(user?.id);
   const isTeacher = role === "teacher" || role === "admin";
-  const { data: classes, isLoading } = useClasses();
+  const { data: classes, isLoading, isError, refetch } = useClasses();
   const join = useJoinClass();
   const [code, setCode] = useState("");
 
@@ -53,6 +55,7 @@ function ClassesPage() {
     }
   }
 
+  if (isError) return <QueryRecovery retry={() => { void refetch(); }} />;
   return (
     <div>
       <PageHeader
@@ -115,7 +118,7 @@ function ClassesPage() {
                   </span>
                 </div>
                 {isTeacher && (
-                  <button
+                  <Button variant="ghost"
                     onClick={() => {
                       navigator.clipboard?.writeText(c.join_code);
                       toast.success(`Code ${c.join_code} copied`);
@@ -126,7 +129,7 @@ function ClassesPage() {
                       <KeySquare className="h-3.5 w-3.5" /> Code: {c.join_code}
                     </span>
                     <Copy className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 )}
               </div>
             </Card>

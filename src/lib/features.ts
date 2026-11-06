@@ -56,7 +56,8 @@ export function useMarkNotificationsRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (ids?: string[]) => {
-      let q = supabase.from("notifications").update({ read: true }).eq("user_id", user!.id).eq("read", false);
+      if (!user) throw new Error("Not signed in");
+      let q = supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
       if (ids?.length) q = q.in("id", ids);
       const { error } = await q;
       if (error) throw error;
@@ -165,11 +166,17 @@ export function useAddMaterial() {
       url?: string;
       file?: File;
     }) => {
+      if (!user) throw new Error("Not signed in");
+      if (input.kind === "file" && !input.file) throw new Error("Choose a file");
+      if (input.kind === "link") {
+        const link = new URL(input.url ?? "");
+        if (!["http:", "https:"].includes(link.protocol)) throw new Error("Use an http or https link");
+      }
       let file_path: string | null = null;
       let mime: string | null = null;
       let size_bytes: number | null = null;
       if (input.kind === "file" && input.file) {
-        const path = `${input.class_id}/${Date.now()}-${input.file.name}`;
+        const path = `${input.class_id}/${crypto.randomUUID()}-${input.file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
         const { error: upErr } = await supabase.storage.from("materials").upload(path, input.file);
         if (upErr) throw upErr;
         file_path = path;
@@ -178,7 +185,7 @@ export function useAddMaterial() {
       }
       const { error } = await supabase.from("materials").insert({
         class_id: input.class_id,
-        uploader_id: user!.id,
+        uploader_id: user.id,
         title: input.title,
         description: input.description ?? null,
         kind: input.kind,
@@ -187,7 +194,10 @@ export function useAddMaterial() {
         mime,
         size_bytes,
       });
-      if (error) throw error;
+      if (error) {
+        if (file_path) await supabase.storage.from("materials").remove([file_path]);
+        throw error;
+      }
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["materials", v.class_id] }),
   });
@@ -197,7 +207,10 @@ export function useDeleteMaterial() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (m: MaterialRow) => {
-      if (m.file_path) await supabase.storage.from("materials").remove([m.file_path]);
+      if (m.file_path) {
+        const { error } = await supabase.storage.from("materials").remove([m.file_path]);
+        if (error) throw error;
+      }
       const { error } = await supabase.from("materials").delete().eq("id", m.id);
       if (error) throw error;
     },
