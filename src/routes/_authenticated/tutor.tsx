@@ -53,6 +53,7 @@ function TutorPage() {
   async function send(text: string) {
     const content = text.trim();
     if (!content || loading) return;
+    if (content.length > 8000) return toast.error("Please keep your question under 8,000 characters.");
     const next = [...messages, { role: "user" as const, content }];
     setMessages(next);
     setInput("");
@@ -86,13 +87,13 @@ function TutorPage() {
               </p>
               <div className="mt-6 grid w-full max-w-lg grid-cols-1 gap-2 sm:grid-cols-2">
                 {SUGGESTIONS.map((s) => (
-                  <button
+                  <Button variant="outline"
                     key={s}
                     onClick={() => send(s)}
-                    className="rounded-xl border border-border p-3 text-left text-sm transition-colors hover:border-primary/40 hover:bg-accent"
+                    className="h-auto whitespace-normal rounded-xl border border-border p-3 text-left text-sm transition-colors hover:border-primary/40 hover:bg-accent"
                   >
                     {s}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -117,13 +118,13 @@ function TutorPage() {
           }}
           className="flex items-center gap-2 border-t border-border p-3"
         >
-          <input
+          <input aria-label="Ask the AI Tutor" maxLength={8000}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask the AI Tutor…"
             className="flex-1 rounded-full border border-input bg-background px-4 py-2.5 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
-          <Button type="submit" variant="hero" size="icon" className="h-10 w-10 rounded-full" disabled={loading || !input.trim()}>
+          <Button type="submit" aria-label="Send question" variant="hero" size="icon" className="h-10 w-10 rounded-full" disabled={loading || !input.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </form>
