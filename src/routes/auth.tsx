@@ -1,7 +1,8 @@
+import { pageMeta } from "@/lib/page-meta";
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { z } from "zod";
-import { GraduationCap, BookOpen, ShieldCheck, Loader2 } from "lucide-react";
+import { GraduationCap, BookOpen, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -12,19 +13,12 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({
-    meta: [
-      { title: "Sign in — EduVerse" },
-      { name: "description", content: "Sign in or create your EduVerse account as a student, teacher or admin." },
-    ],
-  }),
+  head: () => pageMeta('Sign in', 'Sign in to EduVerse to access your classes and coursework.'),
   component: AuthPage,
 });
 
 const ROLES: { value: AppRole; label: string; desc: string; icon: typeof BookOpen }[] = [
   { value: "student", label: "Student", desc: "Learn, submit & grow", icon: BookOpen },
-  { value: "teacher", label: "Teacher", desc: "Teach & manage classes", icon: GraduationCap },
-  { value: "admin", label: "Admin", desc: "Manage the platform", icon: ShieldCheck },
 ];
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
@@ -59,17 +53,22 @@ function AuthPage() {
           setLoading(false);
           return toast.error("Please enter your full name");
         }
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: emailR.data,
           password: passR.data,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: fullName.trim(), role },
+            data: { full_name: fullName.trim() },
           },
         });
         if (error) throw error;
-        toast.success("Welcome to EduVerse! 🎉");
-        navigate({ to: "/dashboard", replace: true });
+        if (data.session) {
+          toast.success("Welcome to EduVerse!");
+          navigate({ to: "/dashboard", replace: true });
+        } else {
+          toast.success("Check your email to confirm your account, then sign in.");
+          setMode("signin");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: emailR.data,
@@ -131,10 +130,10 @@ function AuthPage() {
                   <>
                     <div className="space-y-2">
                       <Label>I am a…</Label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 gap-2">
                         {ROLES.map((r) => (
-                          <button
-                            type="button"
+                          <Button
+                            type="button" variant="outline"
                             key={r.value}
                             onClick={() => setRole(r.value)}
                             className={`flex flex-col items-center gap-1 rounded-2xl border p-3 text-center transition-all ${
@@ -145,7 +144,7 @@ function AuthPage() {
                           >
                             <r.icon className="h-5 w-5" />
                             <span className="text-xs font-semibold">{r.label}</span>
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>

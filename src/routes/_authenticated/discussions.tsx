@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { MessagesSquare, Send } from "lucide-react";
@@ -15,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/discussions")({
-  head: () => ({ meta: [{ title: "Discussions — EduVerse" }] }),
+  head: () => pageMeta('Discussions', 'Discussions for your EduVerse classes and learning journey.'),
   component: DiscussionsPage,
 });
 

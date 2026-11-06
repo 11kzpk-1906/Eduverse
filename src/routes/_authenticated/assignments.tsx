@@ -1,3 +1,6 @@
+import { pageMeta } from "@/lib/page-meta";
+import { submissionStatus as studentStatus, validGrade, validPoints } from "@/lib/learning-loop";
+import { QueryRecovery } from "@/components/query-recovery";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
@@ -41,7 +44,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/assignments")({
-  head: () => ({ meta: [{ title: "Assignments — EduVerse" }] }),
+  head: () => pageMeta('Assignments', 'Submit coursework, review answers and receive teacher feedback.'),
   component: AssignmentsPage,
 });
 
@@ -61,7 +64,8 @@ function AssignmentsPage() {
   const { user } = useSession();
   const { data: role } = useRole(user?.id);
   const isTeacher = role === "teacher" || role === "admin";
-  const { data: assignments, isLoading } = useAssignments();
+  const { data: assignments, isLoading, isError, refetch } = useAssignments();
+  if (isError) return <QueryRecovery retry={() => { void refetch(); }} />;
 
   return (
     <div>
@@ -109,15 +113,6 @@ function Empty({ isTeacher }: { isTeacher: boolean }) {
 }
 
 /* ---------------- Student ---------------- */
-type StudentStatus = "pending" | "submitted" | "graded";
-
-function studentStatus(a: AssignmentWithMeta, userId?: string): { status: StudentStatus; sub?: SubmissionRow } {
-  const sub = a.submissions.find((s) => s.student_id === userId);
-  if (!sub) return { status: "pending" };
-  if (sub.grade != null) return { status: "graded", sub };
-  return { status: "submitted", sub };
-}
-
 function StudentView({ assignments, userId }: { assignments: AssignmentWithMeta[]; userId?: string }) {
   const tabs = ["all", "pending", "submitted", "graded"] as const;
   return (
@@ -298,7 +293,7 @@ function GradeCard({ sub, points }: { sub: SubmissionRow; points: number }) {
 
   async function save() {
     const n = Number(score);
-    if (Number.isNaN(n) || n < 0 || n > points) return toast.error(`Enter a grade between 0 and ${points}`);
+    if (!validGrade(score, points)) return toast.error(`Enter a grade between 0 and ${points}`);
     try {
       await grade.mutateAsync({ submission_id: sub.id, grade: n, feedback });
       toast.success("Grade saved!");
@@ -308,29 +303,30 @@ function GradeCard({ sub, points }: { sub: SubmissionRow; points: number }) {
   }
 
   return (
-    <Card className="rounded-xl border-border p-3">
+    <div className="border-b border-border py-3">
       <p className="mb-2 whitespace-pre-wrap text-sm">{sub.content || <em className="text-muted-foreground">No content</em>}</p>
       <div className="flex flex-wrap items-end gap-2">
         <div className="w-24 space-y-1">
           <Label className="text-xs">Grade / {points}</Label>
-          <Input value={score} onChange={(e) => setScore(e.target.value)} inputMode="numeric" />
+          <Input aria-label="Grade" type="number" min={0} max={points} step={1} value={score} onChange={(e) => setScore(e.target.value)} inputMode="numeric" />
         </div>
         <div className="min-w-[140px] flex-1 space-y-1">
           <Label className="text-xs">Feedback</Label>
-          <Input value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder="Nice work!" />
+          <Input aria-label="Feedback" value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder="Nice work!" />
         </div>
         <Button size="sm" onClick={save} disabled={grade.isPending}>
           {grade.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }
 
 function CreateAssignmentDialog() {
   const { data: classes } = useClasses();
   const create = useCreateAssignment();
-  const myClasses = useMemo(() => classes ?? [], [classes]);
+  const { user } = useSession();
+  const myClasses = useMemo(() => (classes ?? []).filter(c => c.teacher_id === user?.id), [classes, user?.id]);
   const [open, setOpen] = useState(false);
   const [classId, setClassId] = useState("");
   const [title, setTitle] = useState("");
@@ -341,13 +337,14 @@ function CreateAssignmentDialog() {
   async function submit() {
     if (!classId) return toast.error("Pick a class");
     if (!title.trim()) return toast.error("Title is required");
+    if (!validPoints(points)) return toast.error("Points must be a positive whole number");
     try {
       await create.mutateAsync({
         class_id: classId,
         title: title.trim(),
         description: description.trim(),
         due_date: due ? new Date(due).toISOString() : null,
-        points: Number(points) || 100,
+        points: Number(points),
       });
       toast.success("Assignment created!");
       setTitle("");

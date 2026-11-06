@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { Trophy, Flame, Coins } from "lucide-react";
 import { PageHeader } from "@/components/dashboard-bits";
@@ -7,7 +8,7 @@ import { useLeaderboard } from "@/lib/games";
 import { useSession } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/_authenticated/leaderboard")({
-  head: () => ({ meta: [{ title: "Leaderboard — EduVerse" }] }),
+  head: () => pageMeta('Leaderboard', 'Leaderboard for your EduVerse classes and learning journey.'),
   component: LeaderboardPage,
 });
 

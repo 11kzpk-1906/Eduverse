@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -11,7 +12,7 @@ import { Button } from "@/components/ui/button";
 const tutorSearchSchema = z.object({ q: z.string().optional() });
 
 export const Route = createFileRoute("/_authenticated/tutor")({
-  head: () => ({ meta: [{ title: "AI Tutor — EduVerse" }] }),
+  head: () => pageMeta('AI Tutor', 'AI Tutor for your EduVerse classes and learning journey.'),
   validateSearch: tutorSearchSchema,
   component: TutorPage,
 });

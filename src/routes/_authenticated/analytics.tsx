@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -9,7 +10,7 @@ import { useAssignments, useClasses } from "@/lib/data";
 import { useLeaderboard } from "@/lib/games";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
-  head: () => ({ meta: [{ title: "Analytics — EduVerse" }] }),
+  head: () => pageMeta('Analytics', 'Analytics for your EduVerse classes and learning journey.'),
   component: AnalyticsPage,
 });
 

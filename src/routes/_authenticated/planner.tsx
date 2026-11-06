@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -16,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/planner")({
-  head: () => ({ meta: [{ title: "AI Study Planner — EduVerse" }] }),
+  head: () => pageMeta('AI Study Planner', 'AI Study Planner for your EduVerse classes and learning journey.'),
   component: PlannerPage,
 });
 

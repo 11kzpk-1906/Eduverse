@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { FolderOpen, Plus, Loader2, Link as LinkIcon, File as FileIcon, Trash2, Download } from "lucide-react";
@@ -20,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/materials")({
-  head: () => ({ meta: [{ title: "Materials — EduVerse" }] }),
+  head: () => pageMeta('Materials', 'Access teacher-shared files, PDFs and class resources.'),
   component: MaterialsPage,
 });
 

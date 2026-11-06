@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/page-meta";
 import { createFileRoute } from "@tanstack/react-router";
 import { Search, Mail, TrendingUp, TrendingDown } from "lucide-react";
 import { useState } from "react";
@@ -7,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/_authenticated/students")({
-  head: () => ({ meta: [{ title: "Students — EduVerse" }] }),
+  head: () => pageMeta('Students', 'Students for your EduVerse classes and learning journey.'),
   component: StudentsPage,
 });
 
